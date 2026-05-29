@@ -47,6 +47,13 @@
       width: 122px;
     }
   </style>
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({ 
+      token: "7afb10bf4685466e8ff65df97534dc9f"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
 </head>
 
 <body>
@@ -69,25 +76,49 @@
     </form>
 
     <section id="error-btns">
-      <button>Console Log</button>
-      <button>Console Error</button>
-      <button>Console Count</button>
-      <button>Console Warn</button>
-      <button>Console Assert</button>
-      <button>Console Clear</button>
-      <button>Console Dir</button>
-      <button>Console dirxml</button>
-      <button>Console Group Start</button>
-      <button>Console Group End</button>
-      <button>Console Table</button>
-      <button>Start Timer</button>
-      <button>End Timer</button>
-      <button>Console Trace</button>
-      <button>Trigger a Global Error</button>
+      <button class="ConsoleLogbutton">Console Log</button>
+      <button class="ConsoleErrorbutton">Console Error</button>
+      <button class="ConsoleCountbutton">Console Count</button>
+      <button class="ConsoleWarnbutton">Console Warn</button>
+      <button class="ConsoleAssertbutton">Console Assert</button>
+      <button class="ConsoleClearbutton">Console Clear</button>
+      <button class="ConsoleDirbutton">Console Dir</button>
+      <button class="ConsoleDirxmlbutton">Console dirxml</button>
+      <button class="ConsoleGroupStartbutton">Console Group Start</button>
+      <button class="ConsoleGroupEndbutton">Console Group End</button>
+      <button class="ConsoleTablebutton">Console Table</button>
+      <button class="StartTimerbutton">Start Timer</button>
+      <button class="EndTimerbutton">End Timer</button>
+      <button class="ConsoleTracebutton">Console Trace</button>
+      <button class="TriggerGlobalErrorbutton">Trigger a Global Error</button>
     </section>
   </main>
-
+  
+  
   <script>
+    class invalidInputError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = 'invalidInputError';
+      }
+    }
+
+    class divideByZeroError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = 'divideByZeroError';
+      }
+    }
+
+    class emptyInputError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = 'emptyInputError';
+      }
+    }
+
+
+
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -95,14 +126,44 @@
       let firstNum = document.querySelector('#first-num').value;
       let secondNum = document.querySelector('#second-num').value;
       let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      let calculateBtn = document.querySelector("#calculate");
+      calculateBtn.disabled = true;
+      console.log('Calculate button disabled');
+      try {
+         if(firstNum === '' || secondNum === '') {
+          throw new emptyInputError('Both inputs must be filled');
+        }
+        if (isNaN(firstNum) || isNaN(secondNum)) {
+          throw new invalidInputError('Both inputs must be numbers');
+        }
+        if (operator === '/' && Number(secondNum) === 0) {
+          throw new divideByZeroError('Cannot divide by zero');
+        }
+        output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      } catch (error) {
+        if (error instanceof divideByZeroError) {
+          output.innerHTML = 'Math error: ' + error.message;
+        } else if (error instanceof invalidInputError) {
+          output.innerHTML = 'Input error: ' + error.message;
+        } else if (error instanceof emptyInputError) {
+          output.innerHTML = 'Empty input error: ' + error.message;
+        } else {
+          output.innerHTML = 'Unexpected error: ' + error.message;
+        }
+        console.error(`[${error.name}]`, error.message);
+      }finally {
+        calculateBtn.disabled = false;
+        console.log('finally ran — button re-enabled');
+      }
     });
 
-    let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
+    
 
-    // Start your code here
-    // You may move this JS to another file if you wish
+    
+
+   
   </script>
+  <script src="lab9.js"></script>
 </body>
 
 </html>
